@@ -28,7 +28,7 @@ async function connectDB(){
   // conex.connect();
   return conex;
 }
-//connectDB()//quitar
+//connectDB()//
 
 const PORT = 5005;
 server.listen(PORT, () => {
@@ -244,19 +244,23 @@ server.post('/inscripciones', async(req,res)=>{
     const{evento_id, participante_id}= req.body
     const sqlPartToEvent= 'INSERT INTO eventos_participantes (evento_id, participante_id) VALUES (?,?)' 
     const [result] = await connection.query(sqlPartToEvent, [evento_id, participante_id])
+    
+    res.status(200).json({
+      success: true,
+      message: 'participante inscrito al evento'})
 
-    connection.end()
-    if(result){
-      res.status(201).json({
-        success:true,
-        id: result.insertId//id que genera mysql para la nueva fila
-      })
-    }else{
-      res.status(400).json({
-        success: false,
-        message: 'no se inserto'
-      })
-    } 
+    // connection.end()
+    // if(result){
+    //   res.status(201).json({
+    //     success:true,
+    //     id: result.insertId//id que genera mysql para la nueva fila
+    //   })
+    // }else{
+    //   res.status(400).json({
+    //     success: false,
+    //     message: 'no se inserto'
+    //   })
+    // } 
 
   }catch(error){
     res.status(500).json(error)
@@ -264,10 +268,17 @@ server.post('/inscripciones', async(req,res)=>{
   }
 })
 
-//OBTENER EVENTOS DE PARTICIPANTES GET
+//OBTENER EVENTOS DE UN PARTICIPANTES GET
 server.get('/participantes/:id/eventos', async (req,res)=>{
   try{
     const connection = await connectDB()
+
+    const {id} = req.params
+    const sql = 'SELECT eventos.* FROM eventos JOIN eventos_participantes ON eventos.id = eventos_participantes.evento_id WHERE eventos_participantes.participante_id = ?'
+    const [result] = await connection.query(sql, [id])
+    connection.end()
+    res.status(200).json(result)
+
 
   }catch(error){
     res.status(500).json(error)
@@ -278,6 +289,25 @@ server.get('/participantes/:id/eventos', async (req,res)=>{
 server.get('/eventos/:id/participantes', async(req,res)=>{
   try{
     const connection = await connectDB()
+    const {id} = req.params
+    const sql = 'SELECT participantes.* From participantes JOIN eventos_participantes ON participantes.id = eventos_participantes.participante_id WHERE eventos_participantes.evento_id = ?'
+    const[result] = await connection.query(sql, [id])
+    connection.end()
+    res.status(200).json(result)
+
+  }catch(error){
+    res.status(500).json(error)
+  }
+})
+
+//OBTENER LA LISTA DE PARTICIPANTES Y LOS EENTOS A LOS QUE ESTAN INSCRITOS
+server.get('/inscripciones/finales', async(req,res)=>{
+  try{
+    const connection = await connectDB()
+    const sql = 'SELECT participantes.id AS participante_id, participantes.nombre AS participante_nombre, participantes.email, eventos.id AS evento_id, eventos.nombre AS evento_nombre, eventos.fecha, eventos.lugar FROM eventos_participantes JOIN participantes ON eventos_participantes.participante_id = participantes.id JOIN eventos ON eventos_participantes.evento_id = eventos.id'
+    const[result]= await connection.query(sql)
+    connection.end()
+    res.status(200).json(result)
 
   }catch(error){
     res.status(500).json(error)
