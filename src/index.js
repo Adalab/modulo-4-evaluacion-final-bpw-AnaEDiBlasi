@@ -320,3 +320,5 @@ server.get('/inscripciones/finales', async(req,res)=>{
     res.status(500).json(error)
   }
 })
+
+/////////////BONUS///////////////
