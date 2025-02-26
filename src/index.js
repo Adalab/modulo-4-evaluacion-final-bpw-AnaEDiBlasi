@@ -39,6 +39,7 @@ server.listen(PORT, () => {
 //////////////////////////////////////////EVENTOS///////////////////////////////////////////
 
 //endpoint obtener todos los eventos GET
+//DATE_FORMAT(fecha, "%Y-%m-%d") elimina la hora y solo deja año, mes y dia
 server.get('/eventos', async(req,res)=>{
   try{
     const connection = await connectDB()
@@ -183,7 +184,6 @@ server.post('/participantes', async(req, res)=>{
       email
     ])
 
- 
     connection.end()
     if(result){
       res.status(201).json({
@@ -304,7 +304,14 @@ server.get('/eventos/:id/participantes', async(req,res)=>{
 server.get('/inscripciones/finales', async(req,res)=>{
   try{
     const connection = await connectDB()
-    const sql = 'SELECT participantes.id AS participante_id, participantes.nombre AS participante_nombre, participantes.email, eventos.id AS evento_id, eventos.nombre AS evento_nombre, eventos.fecha, eventos.lugar FROM eventos_participantes JOIN participantes ON eventos_participantes.participante_id = participantes.id JOIN eventos ON eventos_participantes.evento_id = eventos.id'
+    const sql = `SELECT participantes.id AS participante_id,
+     participantes.nombre AS participante_nombre, 
+     participantes.email, 
+     eventos.id AS evento_id,
+     eventos.nombre AS evento_nombre, 
+     DATE_FORMAT(eventos.fecha, "%Y-%m-%d") AS fecha,
+     eventos.lugar 
+     FROM eventos_participantes JOIN participantes ON eventos_participantes.participante_id = participantes.id JOIN eventos ON eventos_participantes.evento_id = eventos.id`
     const[result]= await connection.query(sql)
     connection.end()
     res.status(200).json(result)
