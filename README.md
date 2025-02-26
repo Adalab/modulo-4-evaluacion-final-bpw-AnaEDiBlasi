@@ -10,6 +10,8 @@ Esta API permite gestionar eventos y participantes, facilitando la creación, ac
     - Node.js con Express.js.
     - MySQL con mysql2.
     - CORS para permitir conexiones externas.
+    - JWT para autenticación de usuarios
+    - bcrypt para encriptación de contraseñas
     - dotenv para la gestión de variables de entorno
 
 
@@ -52,6 +54,12 @@ Esta API permite gestionar eventos y participantes, facilitando la creación, ac
         --> Obtener eventos de un participante (GET) /participantes/:id/eventos
         --> Obtener participantes de un evento (GET) /eventos/:id/participantes
         --> Obtener todas las inscripciones (GET) /inscripciones/finales
+
+##BONUS AUTENTICACION DE USUARIOS
+    --> creación de tabla de usuarios usuarios_db
+    -->registro de usuarios POST /registro
+    --> inicio de sesión
+    Middleware de autenticacion
 
 
 ### Notas adicionales
