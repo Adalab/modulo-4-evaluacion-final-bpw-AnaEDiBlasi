@@ -322,3 +322,55 @@ server.get('/inscripciones/finales', async(req,res)=>{
 })
 
 /////////////BONUS///////////////
+//REGISTRAR USUARIO (POST)
+server.post('/registro', async(req, res) =>{
+  const connection = await connectDB()
+  //recibir los datos del usuarior a registrar
+  const {email, password} = req.body
+
+  //comprobar si el email existe
+  const selectEmail = 'SELECT email FROM usuarios_db WHERE email = ?'
+  const [emailResult] = await connection.query(selectEmail, [email])
+
+  //si el usuario no existe, se añade, verifico la longitud del array
+  if(emailResult.length === 0){
+    //antes de hacer insert encriptar contraseña
+    const passwordHashed = await bcrypt.hash(password,10)
+    //hacemos el insert
+    const insertUser = 'INSERT INTO usuarios_db (email, password) VALUES (?,?)'
+    const [result] = await connection.query(insertUser, [email, passwordHashed])
+    connection.end()
+    res.status(201).json({success:true, id: result.insertId})
+  }else{
+    //el usuario ya existe resp= error
+    res.status(200).json({success:false, message: 'El usuario ya existe'})
+  }
+
+})
+
+//LOG IN
+
+ server.post('/login', async(req,res)=>{
+  const connection = await connectDB()
+  const {email, password} = req.body
+
+  const selectEmail = 'SELECT * FROM usuarios_db WHERE email = ?'
+  const [emailResult] = await connection.query(selectEmail, [email])
+
+  //si el email existe --> comprobar si coincide contraseña
+  if(emailResult.lenght !==0){
+    const passwordDB = emailResult[0].password
+    const isSamePassword = await bcrypt.compare(password, passwordDB)
+
+    if(isSamePassword){
+      //las contraseñas iguales crea token
+      const infoToken = {email: emailResult[0].email, id: emailResult[0].id}
+      const token = jwt.sign(infoToken, "armario", {expiresIn: '1h'} )
+      res.status(200).json({success:true, token: token})
+        } else{
+          res.status(200).json({success:false, message: 'contraseña incorrecta'})
+        }
+  }else{
+    res.status(200).json({success:false, message: 'email incorrecto'})
+  }
+ })
