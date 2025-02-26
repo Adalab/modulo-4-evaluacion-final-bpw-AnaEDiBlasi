@@ -13,7 +13,7 @@ const server = express();
 server.use(cors());
 server.use(express.json());
 //plantillas ejs
-server.set('view engine', 'ejs');
+// server.set('view engine', 'ejs');
 require('dotenv').config();
 
 // Conectar a la base de datos
@@ -372,5 +372,44 @@ server.post('/registro', async(req, res) =>{
         }
   }else{
     res.status(200).json({success:false, message: 'email incorrecto'})
+  }
+ })
+
+
+ //// middleware de autenticacion jwt
+
+ function auth(req,res,next){
+
+  const tokenString = req.headers['authorization']
+  console.log(tokenString)
+
+  if(!tokenString) {
+    res.status(400).json({success:false, message: 'No tiene autorización'})
+  }else{
+    try{
+      const token = tokenString.split(' ')[1]
+      const verifyToken = jwt.verify(token, 'armario')
+      req.data = verifyToken
+    
+    }catch(error){
+      res.status(400).json({success:false, message: error})
+    }
+    //acceso a la ruta privada
+    next();
+  }
+
+ }
+
+ server.get('/listaparticipantes', auth,async(req,res) =>{
+  const connection = await connectDB()
+  try {
+    const sqlParticipante = 'SELECT * FROM participantes';
+    const [results] = await connection.query(sqlParticipante);
+
+    connection.end(); 
+    return res.status(200).json({ success: true, data: results }); 
+  } catch (error) {
+    connection.end();
+    return res.status(500).json({ success: false, message: 'Error en el servidor', error: error.message }); 
   }
  })
