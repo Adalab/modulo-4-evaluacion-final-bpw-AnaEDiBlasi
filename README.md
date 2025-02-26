@@ -55,7 +55,7 @@ Esta API permite gestionar eventos y participantes, facilitando la creación, ac
 
 
 ### Notas adicionales
-    - La API sigue una estructura RESful.
+    - La API sigue una estructura RESTful.
     - Se recomienda utilizar POSTMAN para probar los endpoints.
 
 
